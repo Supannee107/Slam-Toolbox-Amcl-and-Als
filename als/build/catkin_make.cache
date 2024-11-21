@@ -1,0 +1,2 @@
+als_ros
+-DCATKIN_DEVEL_PREFIX=/home/supannee/work_sp/als/devel -DCMAKE_INSTALL_PREFIX=/home/supannee/work_sp/als/install -G Unix Makefiles

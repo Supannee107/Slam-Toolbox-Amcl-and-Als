@@ -1,0 +1,8 @@
+prefix=/home/supannee/work_sp/amcl_ws/devel
+
+Name: amcl
+Description: Description of amcl
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

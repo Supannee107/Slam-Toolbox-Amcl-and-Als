@@ -1,0 +1,2 @@
+
+-DCATKIN_DEVEL_PREFIX=/home/supannee/work_sp/slamtoolbox_ws/devel -DCMAKE_INSTALL_PREFIX=/home/supannee/work_sp/slamtoolbox_ws/install -G Unix Makefiles

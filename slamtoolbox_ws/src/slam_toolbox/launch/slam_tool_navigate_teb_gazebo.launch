@@ -1,0 +1,108 @@
+<launch>
+ <!-- Arguments -->
+   <arg name="paused" default="false"/>
+   <arg name="use_sim_time" default="true"/>
+   <arg name="gui" default="true"/>
+   <arg name="headless" default="false"/>
+   <arg name="debug" default="false"/>
+   <arg name="gui_required" default="true"/>
+   <arg name="mesh_enabled" default="true"/>
+
+
+   <arg name="robot_namespace" default="/"/>
+
+   <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(find slam_toolbox)/worlds/house" />
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="headless" value="$(arg headless)"/>
+        <arg name="debug" value="$(arg debug)"/>
+        <arg name="verbose" default="false"/>
+        <arg name="gui_required" value="$(arg gui_required)"/>
+
+    </include>
+
+
+   <group ns="$(arg robot_namespace)">
+
+      <param name="robot_description" command="$(find xacro)/xacro '$(find slam_toolbox)/urdf/robot.urdf.xacro'
+        --inorder mesh_enabled:=$(arg mesh_enabled)" />
+
+      <node name="ds_spawn" pkg="gazebo_ros" type="spawn_model" output="screen" args="  -z 0.18
+                    -urdf 
+                    -param robot_description 
+                    -model $(arg robot_namespace)" />
+
+
+      <rosparam command="load" file="$(find slam_toolbox)/config/control_diff.yaml" />
+
+      <node name="base_controller_spawner" pkg="controller_manager" type="spawner" args="  joint_state_controller
+                    velocity_controller
+                            "/>
+
+   </group>
+
+   <!-- Arguments -->
+
+<arg name="set_base_frame" default="base_link"/>
+<arg name="set_odom_frame" default="odom"/>
+<arg name="set_map_frame" default="map"/>
+<arg name="scan_topic" default="/scan"/>
+
+
+   <!-- URDF model -->
+<param name="robot_description" command="$(find xacro)/xacro '$(find slam_toolbox)/urdf/robot.urdf.xacro'" />
+
+
+   <!-- joint state publisher -->
+<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+<param name="use_gui" value="False"/>
+</node>  
+
+
+   <!--Publish robot state and transforms-->
+<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"></node>
+
+
+
+<node pkg="tf" type="static_transform_publisher" name="base_link_to_laser4"
+args="0.0 0.0 0.2 0 0.0 0.0 /base_link /laser_frame 40" />
+
+
+
+
+<!-- navigation_stack -->
+
+<!-- Arguments -->
+<arg name="cmd_vel_topic" default="/cmd_vel" />
+<arg name="odom_topic" default="/odom" />
+<arg name="move_forward_only" default="false"/>
+
+<!-- move_base -->
+<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+<param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+<rosparam file="$(find slam_toolbox)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+<rosparam file="$(find slam_toolbox)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+<rosparam file="$(find slam_toolbox)/config/local_costmap_params.yaml" command="load" />
+<rosparam file="$(find slam_toolbox)/config/global_costmap_params.yaml" command="load" />
+<rosparam file="$(find slam_toolbox)/config/move_base_params.yaml" command="load" />
+<rosparam file="$(find slam_toolbox)/config/dwa_local_planner_params.yaml" command="load" />
+<remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+<remap from="odom" to="$(arg odom_topic)"/>
+<param name="DWAPlannerROS/min_vel_x" value="0.0" if="$(arg move_forward_only)" />
+</node>
+  
+
+<arg
+name="odom_frame" default="odom" />  <node pkg="rviz" type="rviz" name="rviz"
+args="-d $(find slam_toolbox)/rviz/navigation.rviz"></node>
+
+
+   <!-- SLAM Toolbox -->
+<node pkg="slam_toolbox" type="async_slam_toolbox_node" name="slam_toolbox" output="screen">
+<rosparam command="load" file="$(find slam_toolbox)/config/mapper_params_online_async_local.yaml" />
+</node>
+	
+
+</launch>

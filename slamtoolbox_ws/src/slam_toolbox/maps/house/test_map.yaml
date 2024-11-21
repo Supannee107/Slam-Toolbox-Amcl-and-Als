@@ -1,0 +1,7 @@
+image: /home/supannee/work_sp/slamtoolbox_ws/src/slam_toolbox/maps/house/test_map.pgm
+resolution: 0.050000
+origin: [-20.241387, -37.232247, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+
